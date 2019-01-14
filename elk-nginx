@@ -1,0 +1,23 @@
+input {
+   file {
+       path => "/usr/local/nginx/logs/access.log"
+       type => "nginxlog"
+       start_position => "beginning"
+       }
+}
+
+filter{
+    if [type]=="nginxlog" {
+     grok {
+       match => ["message", "%{COMMONAPACHELOG}"]
+       }
+     date {
+       match => ["timestamp","dd/MMM/yyyy:HH:mm:ss Z"]
+    }
+ }
+}
+
+output {
+    stdout { codec => rubydebug }
+    elasticsearch { hosts => "127.0.0.1:9200" }
+}

@@ -1,0 +1,57 @@
+##累计注册人数
+
+select COUNT(userId),channelId  from register_log GROUP BY channelId;
+
+##今日注册人数 /累计新增
+select COUNT(userId), channelId from register_log WHERE creattime >= '2018-09-15' and creattime <'2018-09-15 17:30:00' GROUP BY channelId;
+
+##累计新增设备
+select COUNT(distinct(imei)),channelId from register_log GROUP BY channelId;
+
+##累计新增设备 
+select COUNT(distinct(imei)),channelId from register_log WHERE creattime >= '2018-09-15' and creattime <'2018-09-15 17:30:00' GROUP BY channelId;
+
+##今日老用户
+SELECT COUNT(distinct(a.userId)), a.channelId from login_log a,register_log b  where a.logtype =1 and a.creattime >='2018-09-15' and a.creattime<'2018-09-15 17:30:00' and a.playerId=b.playerId and b.creattime<= '2018-09-15'GROUP BY a.channelId ;
+
+##今日新用户
+SELECT COUNT(distinct(a.userId)), a.channelId from login_log a,register_log b  where a.logtype =1 and a.creattime >='2018-09-15' and a.creattime<'2018-09-15 17:30:00' and a.playerId=b.playerId and b.creattime>= '2018-09-15'GROUP BY a.channelId ;
+
+##今日累计充值人数 付费人数
+SELECT count(DISTINCT(playerId)),channelId FROM recharge_log where creattime >= '2018-09-1
+5' and creattime <'2018-09-15 17:30:00'GROUP BY channelId;
+
+##累计活跃度
+SELECT COUNT(distinct(userId)) ,channelId from login_log where logtype =1   GROUP BY channelId;
+
+##今日累计活跃数
+SELECT COUNT(distinct(userId)) ,channelId from login_log where logtype =1  and creattime >= '2018-09-15' and creattime <'2018-09-15 17:30:00'GROUP BY channelId;
+
+##累计充值人数
+SELECT count(DISTINCT(playerId)),channelId FROM recharge_log GROUP BY channelId;
+
+##昨日累计充值人数
+SELECT count(DISTINCT(playerId)),channelId FROM recharge_log where creattime < '2018-09-15'GROUP BY channelId;
+
+
+##今日累计充值人数到十二点半
+SELECT count(DISTINCT(playerId)),channelId FROM recharge_log where creattime > '2018-09-15' and creattime <'2018-09-15 16:30:59'GROUP BY channelId;
+
+##今日充值总金额 按小时查询
+SELECT SUM(pay_amt) ,channelId FROM recharge_log where creattime >= '2018-09-15' and creattime <'2018-09-15 17:30:00' GROUP BY channelId;
+
+##昨日充值总金额
+SELECT SUM(pay_amt) ,channelId FROM recharge_log WHERE creattime <'2018-09-15' AND creattime >'2018-09-14 ' GROUP BY channelId;
+
+##今日注册人数
+SELECT COUNT(distinct(userId)) from register_log WHERE creattime>'2018-09-15'GROUP BY channelId 
+
+SELECT * FROM recharge_log WHERE creattime >'2018-09-15 15:30:00'and creattime <='2018-09-15 16:30:00' and channelId=1007
+
+首次付费用户留存
+SELECT COUNT(distinct(a.userId)), a.channelId from login_log a,register_log b,recharge_log c where a.logtype =1 and c.creattime >='2019-01-20' and c.creattime<'2019-01-20 23:59:59' and a.playerId=c.playerId and b.creattime<= '2019-01-21'GROUP BY a.channelId ;
+
+
+
+
+

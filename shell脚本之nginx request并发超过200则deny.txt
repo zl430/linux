@@ -1,0 +1,46 @@
+#!/bin/bash
+# nginx请求每秒超过200次则加入黑名单
+ 
+# 准备: 
+    # 创建 $nginx_path/conf/sites_file目录
+    # nginx.conf中添加include $nginx_path/conf/sites_file/deny.conf
+    # 确保nginx日志切割(配置/etc/logrotate.conf)
+ 
+nginx_path='/web/nginx'
+ 
+# 判断目录文件是否存在
+check_dir(){
+    if [ ! -d "$nginx_path"/conf/sites_file ];then
+        echo "$nginx_path/conf/sites_file does not exist" 
+        exit 1
+    else
+        inc=$(egrep "include "$nginx_path"/conf/sites_file/*.conf" "$nginx_path"/conf/nginx.conf)
+        if [ -z "$inc" ];then
+            echo "include $nginx_path/conf/sites_file/*.conf 未添加"
+            exit 1
+        fi
+    fi
+}
+# 统计每秒访问ip及访问次数
+count(){
+    # 统计ip及时间戳,过滤掉127.0.0.1及本地ip(egrep -v 'ip1|ip2|ip3')
+    awk '{print $1,$4}' "$nginx_path"/logs/access.log|egrep -v '127.0.0.1|47.107.31.155|120.79.123.130|119.23.163.7|10.116.79.110|120.25.245.217|120.77.236.74|172.18.209.57|119.23.111.196'|sort|uniq -c|sort -rn| \
+    # 读取每一行,判断请求大于200加入黑名单
+    while read line
+    do
+        if [ $(echo "$line"|awk '{print $1}') -gt 200 ];then
+            check_repeat=$(egrep "$(echo "$line"|awk '{print $2}')" "$nginx_path"/conf/sites_file/deny.conf)
+            if [ -z "$check_repeat" ];then
+                echo "deny $(echo "$line"|awk '{print $2}');" >> "$nginx_path"/conf/sites_file/deny.conf
+                printf '%s\n%s\n%s\n%s\n' "time: $(echo $line|awk '{print $3}')" "action: deny $(echo $line|awk '{print $2}')" \
+": $(echo $line|awk '{print $1}')" "--------------------" >> "$nginx_path"/conf/sites_file/deny.log
+                nginx -s reload
+            fi
+        fi
+    done
+}
+check_dir
+count
+ 
+# check that nginx request is greater than 200
+# */30 * * * * /bin/bash /root/scripts/nginx_request_deny.sh
